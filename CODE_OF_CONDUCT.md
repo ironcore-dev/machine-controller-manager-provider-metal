@@ -1,0 +1,1 @@
+Please refer to the [Ironcore code of conduct](https://ironcore-dev.github.io/documentation/contribute/overview/#code-of-conduct).
