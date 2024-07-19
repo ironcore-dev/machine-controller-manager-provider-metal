@@ -39,20 +39,8 @@ func validateSecret(secret *corev1.Secret, fldPath *field.Path) field.ErrorList 
 func validateMachineClassSpec(spec *v1alpha1.ProviderSpec, fldPath *field.Path) field.ErrorList {
 	var allErrs field.ErrorList
 
-	if spec.RootDisk != nil && spec.RootDisk.VolumeClassName == "" {
-		allErrs = append(allErrs, field.Required(fldPath.Child("rootDisk").Child("volumeClassName"), "volumeClassName is required"))
-	}
-
 	if spec.Image == "" {
 		allErrs = append(allErrs, field.Required(fldPath.Child("image"), "image is required"))
-	}
-
-	if spec.NetworkName == "" {
-		allErrs = append(allErrs, field.Required(fldPath.Child("networkName"), "networkName is required"))
-	}
-
-	if spec.PrefixName == "" {
-		allErrs = append(allErrs, field.Required(fldPath.Child("prefixName"), "prefixName is required"))
 	}
 
 	for i, ip := range spec.DnsServers {

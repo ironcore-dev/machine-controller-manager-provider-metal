@@ -104,9 +104,7 @@ func (d *metalDriver) applyServerClaim(ctx context.Context, req *driver.CreateMa
 		Spec: metalv1alpha1.ServerClaimSpec{
 			Power: "On",
 			ServerSelector: &metav1.LabelSelector{
-				MatchLabels: map[string]string{
-					"instance-type": req.MachineClass.NodeTemplate.InstanceType,
-				},
+				MatchLabels:      providerSpec.ServerLabels,
 				MatchExpressions: nil,
 			},
 			IgnitionSecretRef: &corev1.LocalObjectReference{Name: ignitionSecret.Name},

@@ -25,17 +25,13 @@ var _ = Describe("Machine", func() {
 			Expect(errList).To(match)
 		},
 		Entry("no secret",
-			&v1alpha1.ProviderSpec{
-				RootDisk: &v1alpha1.RootDisk{},
-			},
+			&v1alpha1.ProviderSpec{},
 			nil,
 			fldPath,
 			ContainElement(field.Required(fldPath.Child("spec.secretRef"), "secretRef is required")),
 		),
 		Entry("no userData in secret",
-			&v1alpha1.ProviderSpec{
-				RootDisk: &v1alpha1.RootDisk{},
-			},
+			&v1alpha1.ProviderSpec{},
 			&corev1.Secret{
 				Data: map[string][]byte{
 					"userData": nil,
@@ -46,44 +42,14 @@ var _ = Describe("Machine", func() {
 		),
 		Entry("no image",
 			&v1alpha1.ProviderSpec{
-				Image:    "",
-				RootDisk: &v1alpha1.RootDisk{},
+				Image: "",
 			},
 			&corev1.Secret{},
 			fldPath,
 			ContainElement(field.Required(fldPath.Child("spec.image"), "image is required")),
 		),
-		Entry("no volumeclass name",
-			&v1alpha1.ProviderSpec{
-				RootDisk: &v1alpha1.RootDisk{
-					VolumeClassName: "",
-				},
-			},
-			&corev1.Secret{},
-			fldPath,
-			ContainElement(field.Required(fldPath.Child("spec.rootDisk.volumeClassName"), "volumeClassName is required")),
-		),
-		Entry("no network name",
-			&v1alpha1.ProviderSpec{
-				NetworkName: "",
-				RootDisk:    &v1alpha1.RootDisk{},
-			},
-			&corev1.Secret{},
-			fldPath,
-			ContainElement(field.Required(fldPath.Child("spec.networkName"), "networkName is required")),
-		),
-		Entry("no prefix name",
-			&v1alpha1.ProviderSpec{
-				PrefixName: "",
-				RootDisk:   &v1alpha1.RootDisk{},
-			},
-			&corev1.Secret{},
-			fldPath,
-			ContainElement(field.Required(fldPath.Child("spec.prefixName"), "prefixName is required")),
-		),
 		Entry("invalid dns server ip",
 			&v1alpha1.ProviderSpec{
-				RootDisk:   &v1alpha1.RootDisk{},
 				DnsServers: []netip.Addr{invalidIP},
 			},
 			&corev1.Secret{},

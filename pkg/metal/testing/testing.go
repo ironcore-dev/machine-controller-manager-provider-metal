@@ -13,11 +13,8 @@ var (
 		},
 		"machineClassName": "foo",
 		"machinePoolName":  "foo",
-		"networkName":      "my-network",
-		"prefixName":       "my-prefix",
-		"rootDisk": map[string]string{
-			"volumeClassName": "foo",
-			"size":            "10Gi",
+		"serverLabels": map[string]string{
+			"instance-type": "bar",
 		},
 		"ignitionSecret": map[string]string{
 			"name": "foo",

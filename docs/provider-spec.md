@@ -72,47 +72,6 @@ If the key is empty, the DefaultIgnitionKey will be used as fallback.</p>
 </tr>
 <tr>
 <td>
-<code>rootDisk</code>
-</td>
-<td>
-<em>
-<a href="#?id=%23settings.gardener.cloud%2fv1alpha1.RootDisk">
-RootDisk
-</a>
-</em>
-</td>
-<td>
-<p>RootDisk defines the root disk properties of the Machine.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>networkName</code>
-</td>
-<td>
-<em>
-string
-</em>
-</td>
-<td>
-<p>NetworkName is the Network to be used for the Machine&rsquo;s NetworkInterface.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>prefixName</code>
-</td>
-<td>
-<em>
-string
-</em>
-</td>
-<td>
-<p>PrefixName is the parent Prefix from which an IP should be allocated for the Machine&rsquo;s NetworkInterface.</p>
-</td>
-</tr>
-<tr>
-<td>
 <code>labels</code>
 </td>
 <td>
@@ -139,67 +98,17 @@ map[string]string
 <p>DnsServers is a list of DNS resolvers which should be configured on the host.</p>
 </td>
 </tr>
-</tbody>
-</table>
-<br>
-<h3 id="settings.gardener.cloud/v1alpha1.RootDisk">
-<b>RootDisk</b>
-</h3>
-<p>
-(<em>Appears on:</em>
-<a href="#?id=%23settings.gardener.cloud%2fv1alpha1.ProviderSpec">ProviderSpec</a>)
-</p>
-<p>
-<p>RootDisk defines the root disk properties of the Machine.</p>
-</p>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
 <tr>
 <td>
-<code>size</code>
+<code>serverLabels</code>
 </td>
 <td>
 <em>
-<a href="#?id=https%3a%2f%2fpkg.go.dev%2fk8s.io%2fapimachinery%2fpkg%2fapi%2fresource%23Quantity">
-k8s.io/apimachinery/pkg/api/resource.Quantity
-</a>
+map[string]string
 </em>
 </td>
 <td>
-<p>Size defines the volume size of the root disk.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>volumeClassName</code>
-</td>
-<td>
-<em>
-string
-</em>
-</td>
-<td>
-<p>VolumeClassName defines which volume class to use for the root disk.</p>
-</td>
-</tr>
-<tr>
-<td>
-<code>volumePoolName</code>
-</td>
-<td>
-<em>
-string
-</em>
-</td>
-<td>
-<p>VolumePoolName defines on which VolumePool a Volume should be scheduled.</p>
+<p>ServerLabels are passed to the ServerClaim to find a server with certain properties</p>
 </td>
 </tr>
 </tbody>

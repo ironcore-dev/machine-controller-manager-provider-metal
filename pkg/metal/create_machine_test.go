@@ -74,17 +74,9 @@ var _ = Describe("CreateMachine", func() {
 			HaveField("Spec.Power", metalv1alpha1.PowerOn),
 			HaveField("Spec.ServerSelector", &metav1.LabelSelector{
 				MatchLabels: map[string]string{
-					"instance-type": "foo",
-				}}),
-			//	Power: "On",
-			//	ServerSelector: &metav1.LabelSelector{
-			//	MatchLabels: map[string]string{
-			//		"instance-type": req.MachineClass.NodeTemplate.InstanceType,
-			//	},
-			//	MatchExpressions: nil,
-			//},
-			//	IgnitionSecretRef: &corev1.LocalObjectReference{Name: ignitionSecret.Name},
-			//	Image:             providerSpec.Image,
+					"instance-type": "bar",
+				},
+			}),
 		))
 
 		By("ensuring that the ignition secret has been created")

@@ -5,8 +5,6 @@ package v1alpha1
 
 import (
 	"net/netip"
-
-	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 const (
@@ -28,24 +26,10 @@ type ProviderSpec struct {
 	// IgnitionSecretKey is optional key field used to identify the ignition content in the Secret
 	// If the key is empty, the DefaultIgnitionKey will be used as fallback.
 	IgnitionSecretKey string `json:"ignitionSecretKey,omitempty"`
-	// RootDisk defines the root disk properties of the Machine.
-	RootDisk *RootDisk `json:"rootDisk,omitempty"`
-	// NetworkName is the Network to be used for the Machine's NetworkInterface.
-	NetworkName string `json:"networkName"`
-	// PrefixName is the parent Prefix from which an IP should be allocated for the Machine's NetworkInterface.
-	PrefixName string `json:"prefixName"`
 	// Labels are used to tag resources which the MCM creates, so they can be identified later.
 	Labels map[string]string `json:"labels,omitempty"`
 	// DnsServers is a list of DNS resolvers which should be configured on the host.
 	DnsServers []netip.Addr `json:"dnsServers,omitempty"`
-}
-
-// RootDisk defines the root disk properties of the Machine.
-type RootDisk struct {
-	// Size defines the volume size of the root disk.
-	Size resource.Quantity `json:"size"`
-	// VolumeClassName defines which volume class to use for the root disk.
-	VolumeClassName string `json:"volumeClassName"`
-	// VolumePoolName defines on which VolumePool a Volume should be scheduled.
-	VolumePoolName string `json:"volumePoolName,omitempty"`
+	// ServerLabels are passed to the ServerClaim to find a server with certain properties
+	ServerLabels map[string]string `json:"serverLabels,omitempty"`
 }
