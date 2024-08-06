@@ -90,7 +90,7 @@ var _ = Describe("CreateMachine", func() {
 		ignitionData, err := json.Marshal(testing.SampleIgnition)
 		Expect(err).NotTo(HaveOccurred())
 		Eventually(Object(ignition)).Should(SatisfyAll(
-			HaveField("Data", HaveKeyWithValue("ignition.json", MatchJSON(ignitionData))),
+			HaveField("Data", HaveKeyWithValue("ignition", MatchJSON(ignitionData))),
 		))
 
 		By("failing if the machine request is empty")

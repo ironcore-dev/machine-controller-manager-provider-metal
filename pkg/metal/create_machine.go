@@ -78,7 +78,7 @@ func (d *metalDriver) applyServerClaim(ctx context.Context, req *driver.CreateMa
 	}
 
 	ignitionData := map[string][]byte{}
-	ignitionData["ignition.json"] = []byte(ignitionContent)
+	ignitionData["ignition"] = []byte(ignitionContent)
 	ignitionSecret := &corev1.Secret{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: corev1.SchemeGroupVersion.String(),

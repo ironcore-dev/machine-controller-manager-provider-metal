@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	defaultIgnitionKey     = "ignition.json"
+	defaultIgnitionKey     = "ignition"
 	ShootNameLabelKey      = "shoot-name"
 	ShootNamespaceLabelKey = "shoot-namespace"
 )

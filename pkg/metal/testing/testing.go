@@ -20,7 +20,7 @@ var (
 			"name": "foo",
 		},
 		"image":             "my-image",
-		"ignitionSecretKey": "ignition.json",
+		"ignitionSecretKey": "ignition",
 		"ignition": `passwd:
   users:
     - groups: [group1]
