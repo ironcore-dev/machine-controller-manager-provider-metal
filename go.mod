@@ -10,7 +10,7 @@ require (
 	github.com/ironcore-dev/controller-utils v0.9.4
 	github.com/ironcore-dev/metal-operator v0.0.0-20240710090642-501a0daa1610
 	github.com/onsi/ginkgo/v2 v2.21.0
-	github.com/onsi/gomega v1.34.2
+	github.com/onsi/gomega v1.35.1
 	github.com/spf13/pflag v1.0.6-0.20210604193023-d5e0c0615ace
 	k8s.io/api v0.31.0
 	k8s.io/apimachinery v0.31.0
@@ -85,7 +85,7 @@ require (
 	golang.org/x/text v0.19.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	golang.org/x/tools v0.26.0 // indirect
-	google.golang.org/protobuf v1.34.2 // indirect
+	google.golang.org/protobuf v1.35.1 // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.12.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
