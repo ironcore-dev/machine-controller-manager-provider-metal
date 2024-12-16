@@ -1,13 +1,14 @@
 module github.com/ironcore-dev/machine-controller-manager-provider-metal
 
 go 1.22.5
+toolchain go1.23.4
 
 require (
 	github.com/Masterminds/sprig v2.22.0+incompatible
 	github.com/coreos/butane v0.23.0
 	github.com/gardener/machine-controller-manager v0.55.0
 	github.com/imdario/mergo v0.3.16
-	github.com/ironcore-dev/controller-utils v0.9.4
+	github.com/ironcore-dev/controller-utils v0.9.5
 	github.com/ironcore-dev/metal-operator v0.0.0-20240710090642-501a0daa1610
 	github.com/onsi/ginkgo/v2 v2.22.0
 	github.com/onsi/gomega v1.36.1
