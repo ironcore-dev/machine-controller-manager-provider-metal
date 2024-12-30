@@ -19,6 +19,10 @@ var (
 		"ignitionSecret": map[string]string{
 			"name": "foo",
 		},
+		"metaData": map[string]any{
+			"foo": "bar",
+			"baz": "100",
+		},
 		"image":             "my-image",
 		"ignitionSecretKey": "ignition",
 		"ignition": `passwd:
@@ -71,6 +75,14 @@ var (
 					"contents": map[string]interface{}{
 						"compression": "",
 						"source":      "data:,%5BResolve%5D%0ADNS%3D1.2.3.4%0ADNS%3D5.6.7.8",
+					},
+					"mode": 420.0,
+				},
+				map[string]interface{}{
+					"path": "/var/lib/metal-cloud-config/metadata",
+					"contents": map[string]interface{}{
+						"compression": "",
+						"source":      "data:;base64,eyJiYXoiOiIxMDAiLCJmb28iOiJiYXIifQ==",
 					},
 					"mode": 420.0,
 				},

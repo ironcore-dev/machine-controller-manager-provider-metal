@@ -6,6 +6,7 @@ package ignition
 import (
 	"bytes"
 	_ "embed"
+	"encoding/json"
 	"fmt"
 	"net/netip"
 	"strings"
@@ -19,19 +20,21 @@ import (
 )
 
 var (
-	//go:embed template.yaml
+	//go:embed ignition.tmpl
 	IgnitionTemplate string
 )
 
 const (
 	dnsConfFile    = "/etc/systemd/resolved.conf.d/dns.conf"
 	dnsEqualString = "DNS="
+	metaDataFile   = "/var/lib/metal-cloud-config/metadata"
 	fileMode       = 0644
 )
 
 type Config struct {
 	Hostname         string
 	UserData         string
+	MetaData         map[string]any
 	Ignition         string
 	IgnitionOverride bool
 	DnsServers       []netip.Addr
@@ -88,6 +91,29 @@ func File(config *Config) (string, error) {
 		// merge dnsConfiguration with ignition content
 		if err := mergo.Merge(ignitionBase, dnsConf, mergo.WithAppendSlice); err != nil {
 			return "", fmt.Errorf("failed to merge dnsServer configuration with igntition content: %w", err)
+		}
+	}
+
+	if len(config.MetaData) > 0 {
+		metaDataJSON, err := json.Marshal(config.MetaData)
+		if err != nil {
+			return "", fmt.Errorf("failed to marshal MetaData to JSON: %w", err)
+		}
+
+		metaDataConf := map[string]interface{}{
+			"storage": map[string]interface{}{
+				"files": []interface{}{map[string]interface{}{
+					"path": metaDataFile,
+					"mode": fileMode,
+					"contents": map[string]interface{}{
+						"inline": string(metaDataJSON),
+					},
+				}},
+			},
+		}
+		// merge metaData configuration with ignition content
+		if err := mergo.Merge(ignitionBase, metaDataConf, mergo.WithAppendSlice); err != nil {
+			return "", fmt.Errorf("failed to merge metaData configuration with ignition content: %w", err)
 		}
 	}
 

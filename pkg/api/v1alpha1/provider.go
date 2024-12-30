@@ -5,6 +5,8 @@ package v1alpha1
 
 import (
 	"net/netip"
+
+	corev1 "k8s.io/api/core/v1"
 )
 
 const (
@@ -32,4 +34,15 @@ type ProviderSpec struct {
 	DnsServers []netip.Addr `json:"dnsServers,omitempty"`
 	// ServerLabels are passed to the ServerClaim to find a server with certain properties
 	ServerLabels map[string]string `json:"serverLabels,omitempty"`
+	// MedaData is a key-value map of additional data which should be passed to the Machine.
+	MetaData map[string]any `json:"metaData,omitempty"`
+	// AddressesFromNetworks is a list of LocalObjectReferences to Network resources that should be used to assign IP addresses to the worker nodes.
+	AddressesFromNetworks []AddressesFromNetworks `json:"addressesFromNetworks,omitempty"`
+}
+
+type AddressesFromNetworks struct {
+	// Key is the name of metadata key for the network.
+	Key string `json:"key"`
+	// SubnetRef is a reference to the IP subnet.
+	SubnetRef corev1.LocalObjectReference `json:"subnetRef"`
 }
