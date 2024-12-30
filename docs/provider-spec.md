@@ -1,6 +1,55 @@
 ## Specification
 ### ProviderSpec Schema
 <br>
+<h3 id="settings.gardener.cloud/v1alpha1.AddressesFromNetworks">
+<b>AddressesFromNetworks</b>
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#?id=%23settings.gardener.cloud%2fv1alpha1.ProviderSpec">ProviderSpec</a>)
+</p>
+<p>
+</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>key</code>
+</td>
+<td>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Key is the name of metadata key for the network.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>subnetRef</code>
+</td>
+<td>
+<em>
+<a href="#?id=https%3a%2f%2fkubernetes.io%2fdocs%2freference%2fgenerated%2fkubernetes-api%2fv1.29%2f%23localobjectreference-v1-core">
+Kubernetes core/v1.LocalObjectReference
+</a>
+</em>
+</td>
+<td>
+<p>SubnetRef is a reference to the IP subnet.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br>
 <h3 id="settings.gardener.cloud/v1alpha1.ProviderSpec">
 <b>ProviderSpec</b>
 </h3>
@@ -109,6 +158,34 @@ map[string]string
 </td>
 <td>
 <p>ServerLabels are passed to the ServerClaim to find a server with certain properties</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>metaData</code>
+</td>
+<td>
+<em>
+map[string]any
+</em>
+</td>
+<td>
+<p>MedaData is a key-value map of additional data which should be passed to the Machine.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>addressesFromNetworks</code>
+</td>
+<td>
+<em>
+<a href="#?id=%23settings.gardener.cloud%2fv1alpha1.AddressesFromNetworks">
+[]AddressesFromNetworks
+</a>
+</em>
+</td>
+<td>
+<p>AddressesFromNetworks is a list of LocalObjectReferences to Network resources that should be used to assign IP addresses to the worker nodes.</p>
 </td>
 </tr>
 </tbody>

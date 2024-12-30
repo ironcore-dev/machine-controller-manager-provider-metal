@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"time"
 
+	ipamv1alpha1 "github.com/ironcore-dev/ipam/api/ipam/v1alpha1"
+
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/codes"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/status"
@@ -43,6 +45,18 @@ func (d *metalDriver) DeleteMachine(ctx context.Context, req *driver.DeleteMachi
 	if err := d.metalClient.Delete(ctx, ignitionSecret); client.IgnoreNotFound(err) != nil {
 		// Unknown leads to short retry in machine controller
 		return nil, status.Error(codes.Unknown, fmt.Sprintf("error deleting ignition secret: %s", err.Error()))
+	}
+
+	ip := &ipamv1alpha1.IP{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      req.Machine.Name,
+			Namespace: d.metalNamespace,
+		},
+	}
+
+	if err := d.metalClient.Delete(ctx, ip); client.IgnoreNotFound(err) != nil {
+		// Unknown leads to short retry in machine controller
+		return nil, status.Error(codes.Unknown, fmt.Sprintf("error deleting ip resource: %s", err.Error()))
 	}
 
 	serverClaim := &metalv1alpha1.ServerClaim{

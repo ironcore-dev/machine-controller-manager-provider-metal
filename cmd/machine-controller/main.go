@@ -13,6 +13,7 @@ import (
 	mcmoptions "github.com/gardener/machine-controller-manager/pkg/util/provider/app/options"
 	_ "github.com/gardener/machine-controller-manager/pkg/util/reflector/prometheus" // for reflector metric registration
 	_ "github.com/gardener/machine-controller-manager/pkg/util/workqueue/prometheus" // for workqueue metric registration
+	ipamv1alpha1 "github.com/ironcore-dev/ipam/api/ipam/v1alpha1"
 	"github.com/ironcore-dev/machine-controller-manager-provider-ironcore-metal/pkg/metal"
 	metalv1alpha1 "github.com/ironcore-dev/metal-operator/api/v1alpha1"
 	"github.com/spf13/pflag"
@@ -71,6 +72,7 @@ func getMetalClientAndNamespace() (client.Client, string, error) {
 	utilruntime.Must(scheme.AddToScheme(s))
 	utilruntime.Must(corev1.AddToScheme(s))
 	utilruntime.Must(metalv1alpha1.AddToScheme(s))
+	utilruntime.Must(ipamv1alpha1.AddToScheme(s))
 
 	kubeconfigData, err := os.ReadFile(KubeconfigPath)
 	if err != nil {

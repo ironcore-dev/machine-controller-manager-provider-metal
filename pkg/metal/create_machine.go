@@ -7,6 +7,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
+
+	"github.com/imdario/mergo"
+	ipamv1alpha1 "github.com/ironcore-dev/ipam/api/ipam/v1alpha1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/util/wait"
 
 	machinev1alpha1 "github.com/gardener/machine-controller-manager/pkg/apis/machine/v1alpha1"
 	"github.com/gardener/machine-controller-manager/pkg/util/provider/driver"
@@ -18,6 +24,7 @@ import (
 	metalv1alpha1 "github.com/ironcore-dev/metal-operator/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	apitypes "k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/klog"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -40,7 +47,17 @@ func (d *metalDriver) CreateMachine(ctx context.Context, req *driver.CreateMachi
 		return nil, err
 	}
 
-	serverClaim, err := d.applyServerClaim(ctx, req, providerSpec)
+	addressMetaData, err := d.applyIPAddresses(ctx, req, providerSpec)
+	if err != nil {
+		return nil, err
+	}
+
+	ignitionSecret, err := d.applyIgnition(ctx, req, providerSpec, addressMetaData)
+	if err != nil {
+		return nil, err
+	}
+
+	serverClaim, err := d.applyServerClaim(ctx, req, providerSpec, ignitionSecret)
 	if err != nil {
 		return nil, err
 	}
@@ -56,18 +73,91 @@ func isEmptyCreateRequest(req *driver.CreateMachineRequest) bool {
 	return req == nil || req.MachineClass == nil || req.Machine == nil || req.Secret == nil
 }
 
-// applyServerClaim reserves a Server by creating corresponding ServerClaim object with proper ignition data
-func (d *metalDriver) applyServerClaim(ctx context.Context, req *driver.CreateMachineRequest, providerSpec *apiv1alpha1.ProviderSpec) (*metalv1alpha1.ServerClaim, error) {
+// applyIPAddresses creates IPAddresses for the machine and stores them in a secret
+func (d *metalDriver) applyIPAddresses(ctx context.Context, req *driver.CreateMachineRequest, providerSpec *apiv1alpha1.ProviderSpec) ([]map[string]any, error) {
+	var allAddressMetaData []map[string]any
+
+	for _, networkRef := range providerSpec.AddressesFromNetworks {
+		// check if IPAddress exists
+		ipAddr := &ipamv1alpha1.IP{}
+		ipAddrName := req.Machine.Name
+		ipAddrKey := apitypes.NamespacedName{
+			Namespace: d.metalNamespace,
+			Name:      ipAddrName,
+		}
+		var err error
+		if err = d.metalClient.Get(ctx, ipAddrKey, ipAddr); err != nil && !apierrors.IsNotFound(err) {
+			return nil, err
+		}
+		if err == nil {
+			klog.V(3).Infof("IP found %s", ipAddrName)
+		}
+		if apierrors.IsNotFound(err) {
+			klog.V(3).Infof("creating IP to claim address %s", ipAddrName)
+			ip := &ipamv1alpha1.IP{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      ipAddrName,
+					Namespace: d.metalNamespace,
+				},
+				Spec: ipamv1alpha1.IPSpec{Subnet: networkRef.SubnetRef},
+			}
+			if err = d.metalClient.Create(ctx, ip); err != nil {
+				return nil, fmt.Errorf("error applying IP: %w", err)
+			}
+			// Wait for the IP address to reach the finished state
+			err = wait.PollUntilContextTimeout(
+				ctx,
+				time.Millisecond*50,
+				time.Millisecond*340,
+				true,
+				func(ctx context.Context) (bool, error) {
+					ipAddr.Status.State, err = ipamv1alpha1.CFinishedIPState, nil
+					if err != nil {
+						return false, nil
+					}
+					return true, nil
+				})
+			if err != nil {
+				return nil, fmt.Errorf("failed to wait for for ip to be finished: %w", err)
+			}
+		}
+
+		// TODO: add net.IP validation
+		addressMetaData := map[string]any{
+			networkRef.Key: map[string]any{
+				"ip": ipAddr.Status.Reserved.Net.String(),
+			},
+		}
+		allAddressMetaData = append(allAddressMetaData, addressMetaData)
+	}
+	return allAddressMetaData, nil
+}
+
+// applyIgnition creates an ignition file for the machine and stores it in a secret
+func (d *metalDriver) applyIgnition(ctx context.Context, req *driver.CreateMachineRequest, providerSpec *apiv1alpha1.ProviderSpec, addressMetaData []map[string]any) (*corev1.Secret, error) {
 	// Get userData from machine secret
 	userData, ok := req.Secret.Data["userData"]
 	if !ok {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to find user-data in machine secret %s", client.ObjectKeyFromObject(req.Secret)))
 	}
 
+	// Ensure providerSpec.MetaData is a map[string]any
+	if providerSpec.MetaData == nil {
+		providerSpec.MetaData = make(map[string]any)
+	}
+
+	// Merge addressMetaData into providerSpec.MetaData
+	for _, metaData := range addressMetaData {
+		if err := mergo.Merge(&providerSpec.MetaData, metaData, mergo.WithOverride); err != nil {
+			return nil, fmt.Errorf("failed to merge addressMetaData into providerSpec.MetaData: %w", err)
+		}
+	}
+
 	// Construct ignition file config
 	config := &ignition.Config{
 		Hostname:         req.Machine.Name,
 		UserData:         string(userData),
+		MetaData:         providerSpec.MetaData,
 		Ignition:         providerSpec.Ignition,
 		DnsServers:       providerSpec.DnsServers,
 		IgnitionOverride: providerSpec.IgnitionOverride,
@@ -91,6 +181,11 @@ func (d *metalDriver) applyServerClaim(ctx context.Context, req *driver.CreateMa
 		Data: ignitionData,
 	}
 
+	return ignitionSecret, nil
+}
+
+// applyServerClaim reserves a Server by creating corresponding ServerClaim object with proper ignition data
+func (d *metalDriver) applyServerClaim(ctx context.Context, req *driver.CreateMachineRequest, providerSpec *apiv1alpha1.ProviderSpec, ignitionSecret *corev1.Secret) (*metalv1alpha1.ServerClaim, error) {
 	serverClaim := &metalv1alpha1.ServerClaim{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: metalv1alpha1.GroupVersion.String(),
