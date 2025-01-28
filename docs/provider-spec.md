@@ -1,14 +1,15 @@
 ## Specification
 ### ProviderSpec Schema
 <br>
-<h3 id="settings.gardener.cloud/v1alpha1.AddressesFromNetworks">
-<b>AddressesFromNetworks</b>
+<h3 id="settings.gardener.cloud/v1alpha1.IPAMConfig">
+<b>IPAMConfig</b>
 </h3>
 <p>
 (<em>Appears on:</em>
 <a href="#?id=%23settings.gardener.cloud%2fv1alpha1.ProviderSpec">ProviderSpec</a>)
 </p>
 <p>
+<p>IPAMConfig is a reference to an IPAM resource.</p>
 </p>
 <table>
 <thead>
@@ -21,7 +22,7 @@
 <tbody>
 <tr>
 <td>
-<code>key</code>
+<code>metadataKey</code>
 </td>
 <td>
 <em>
@@ -29,22 +30,83 @@ string
 </em>
 </td>
 <td>
-<p>Key is the name of metadata key for the network.</p>
+<p>MetadataKey is the name of metadata key for the network.</p>
 </td>
 </tr>
 <tr>
 <td>
-<code>subnetRef</code>
+<code>ipamRef</code>
 </td>
 <td>
 <em>
-<a href="#?id=https%3a%2f%2fkubernetes.io%2fdocs%2freference%2fgenerated%2fkubernetes-api%2fv1.29%2f%23localobjectreference-v1-core">
-Kubernetes core/v1.LocalObjectReference
+<a href="#?id=%23settings.gardener.cloud%2fv1alpha1.IPAMObjectReference">
+IPAMObjectReference
 </a>
 </em>
 </td>
 <td>
-<p>SubnetRef is a reference to the IP subnet.</p>
+<p>IPAMRef is a reference to the IPAM object, which will be used for IP allocation.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br>
+<h3 id="settings.gardener.cloud/v1alpha1.IPAMObjectReference">
+<b>IPAMObjectReference</b>
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#?id=%23settings.gardener.cloud%2fv1alpha1.IPAMConfig">IPAMConfig</a>)
+</p>
+<p>
+<p>IPAMObjectReference is a reference to the IPAM object, which will be used for IP allocation.</p>
+</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>name</code>
+</td>
+<td>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Name is the name of resource being referenced.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>apiGroup</code>
+</td>
+<td>
+<em>
+string
+</em>
+</td>
+<td>
+<p>APIGroup is the group for the resource being referenced.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>kind</code>
+</td>
+<td>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Kind is the type of resource being referenced.</p>
 </td>
 </tr>
 </tbody>
@@ -162,7 +224,7 @@ map[string]string
 </tr>
 <tr>
 <td>
-<code>metaData</code>
+<code>metadata</code>
 </td>
 <td>
 <em>
@@ -170,22 +232,22 @@ map[string]any
 </em>
 </td>
 <td>
-<p>MedaData is a key-value map of additional data which should be passed to the Machine.</p>
+<p>Metadata is a key-value map of additional data which should be passed to the Machine.</p>
 </td>
 </tr>
 <tr>
 <td>
-<code>addressesFromNetworks</code>
+<code>ipamConfig</code>
 </td>
 <td>
 <em>
-<a href="#?id=%23settings.gardener.cloud%2fv1alpha1.AddressesFromNetworks">
-[]AddressesFromNetworks
+<a href="#?id=%23settings.gardener.cloud%2fv1alpha1.IPAMConfig">
+[]IPAMConfig
 </a>
 </em>
 </td>
 <td>
-<p>AddressesFromNetworks is a list of LocalObjectReferences to Network resources that should be used to assign IP addresses to the worker nodes.</p>
+<p>IPAMConfig is a list of references to Network resources that should be used to assign IP addresses to the worker nodes.</p>
 </td>
 </tr>
 </tbody>
