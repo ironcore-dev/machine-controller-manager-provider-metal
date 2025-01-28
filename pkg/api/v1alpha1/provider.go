@@ -5,8 +5,6 @@ package v1alpha1
 
 import (
 	"net/netip"
-
-	corev1 "k8s.io/api/core/v1"
 )
 
 const (
@@ -34,15 +32,26 @@ type ProviderSpec struct {
 	DnsServers []netip.Addr `json:"dnsServers,omitempty"`
 	// ServerLabels are passed to the ServerClaim to find a server with certain properties
 	ServerLabels map[string]string `json:"serverLabels,omitempty"`
-	// MedaData is a key-value map of additional data which should be passed to the Machine.
-	MetaData map[string]any `json:"metaData,omitempty"`
-	// AddressesFromNetworks is a list of LocalObjectReferences to Network resources that should be used to assign IP addresses to the worker nodes.
-	AddressesFromNetworks []AddressesFromNetworks `json:"addressesFromNetworks,omitempty"`
+	// Metadata is a key-value map of additional data which should be passed to the Machine.
+	Metadata map[string]any `json:"metadata,omitempty"`
+	// IPAMConfig is a list of references to Network resources that should be used to assign IP addresses to the worker nodes.
+	IPAMConfig []IPAMConfig `json:"ipamConfig,omitempty"`
 }
 
-type AddressesFromNetworks struct {
-	// Key is the name of metadata key for the network.
-	Key string `json:"key"`
-	// SubnetRef is a reference to the IP subnet.
-	SubnetRef corev1.LocalObjectReference `json:"subnetRef"`
+// IPAMObjectReference is a reference to the IPAM object, which will be used for IP allocation.
+type IPAMObjectReference struct {
+	// Name is the name of resource being referenced.
+	Name string `json:"name"`
+	// APIGroup is the group for the resource being referenced.
+	APIGroup string `json:"apiGroup"`
+	// Kind is the type of resource being referenced.
+	Kind string `json:"kind"`
+}
+
+// IPAMConfig is a reference to an IPAM resource.
+type IPAMConfig struct {
+	// MetadataKey is the name of metadata key for the network.
+	MetadataKey string `json:"metadataKey"`
+	// IPAMRef is a reference to the IPAM object, which will be used for IP allocation.
+	IPAMRef *IPAMObjectReference `json:"ipamRef"`
 }

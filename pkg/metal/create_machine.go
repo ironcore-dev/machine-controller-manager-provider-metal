@@ -6,6 +6,7 @@ package metal
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
@@ -77,7 +78,7 @@ func isEmptyCreateRequest(req *driver.CreateMachineRequest) bool {
 func (d *metalDriver) applyIPAddresses(ctx context.Context, req *driver.CreateMachineRequest, providerSpec *apiv1alpha1.ProviderSpec) ([]map[string]any, error) {
 	var allAddressMetaData []map[string]any
 
-	for _, networkRef := range providerSpec.AddressesFromNetworks {
+	for _, networkRef := range providerSpec.IPAMConfig {
 		// check if IPAddress exists
 		ipAddr := &ipamv1alpha1.IP{}
 		ipAddrName := req.Machine.Name
@@ -93,13 +94,17 @@ func (d *metalDriver) applyIPAddresses(ctx context.Context, req *driver.CreateMa
 			klog.V(3).Infof("IP found %s", ipAddrName)
 		}
 		if apierrors.IsNotFound(err) {
+			if networkRef.IPAMRef == nil {
+				return nil, errors.New("ipamRef of an ipamConfig is not set")
+			}
 			klog.V(3).Infof("creating IP to claim address %s", ipAddrName)
+			subnetRef := corev1.LocalObjectReference{Name: networkRef.IPAMRef.Name}
 			ip := &ipamv1alpha1.IP{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      ipAddrName,
 					Namespace: d.metalNamespace,
 				},
-				Spec: ipamv1alpha1.IPSpec{Subnet: networkRef.SubnetRef},
+				Spec: ipamv1alpha1.IPSpec{Subnet: subnetRef},
 			}
 			if err = d.metalClient.Create(ctx, ip); err != nil {
 				return nil, fmt.Errorf("error applying IP: %w", err)
@@ -124,7 +129,7 @@ func (d *metalDriver) applyIPAddresses(ctx context.Context, req *driver.CreateMa
 
 		// TODO: add net.IP validation
 		addressMetaData := map[string]any{
-			networkRef.Key: map[string]any{
+			networkRef.MetadataKey: map[string]any{
 				"ip": ipAddr.Status.Reserved.Net.String(),
 			},
 		}
@@ -142,13 +147,13 @@ func (d *metalDriver) applyIgnition(ctx context.Context, req *driver.CreateMachi
 	}
 
 	// Ensure providerSpec.MetaData is a map[string]any
-	if providerSpec.MetaData == nil {
-		providerSpec.MetaData = make(map[string]any)
+	if providerSpec.Metadata == nil {
+		providerSpec.Metadata = make(map[string]any)
 	}
 
 	// Merge addressMetaData into providerSpec.MetaData
 	for _, metaData := range addressMetaData {
-		if err := mergo.Merge(&providerSpec.MetaData, metaData, mergo.WithOverride); err != nil {
+		if err := mergo.Merge(&providerSpec.Metadata, metaData, mergo.WithOverride); err != nil {
 			return nil, fmt.Errorf("failed to merge addressMetaData into providerSpec.MetaData: %w", err)
 		}
 	}
@@ -157,7 +162,7 @@ func (d *metalDriver) applyIgnition(ctx context.Context, req *driver.CreateMachi
 	config := &ignition.Config{
 		Hostname:         req.Machine.Name,
 		UserData:         string(userData),
-		MetaData:         providerSpec.MetaData,
+		MetaData:         providerSpec.Metadata,
 		Ignition:         providerSpec.Ignition,
 		DnsServers:       providerSpec.DnsServers,
 		IgnitionOverride: providerSpec.IgnitionOverride,
