@@ -78,6 +78,10 @@ func isEmptyCreateRequest(req *driver.CreateMachineRequest) bool {
 func (d *metalDriver) applyIPAddresses(ctx context.Context, req *driver.CreateMachineRequest, providerSpec *apiv1alpha1.ProviderSpec) ([]map[string]any, error) {
 	var allAddressMetaData []map[string]any
 
+	d.clientProvider.Lock()
+	defer d.clientProvider.Unlock()
+	metalClient := d.clientProvider.Client
+
 	for _, networkRef := range providerSpec.IPAMConfig {
 		// check if IPAddress exists
 		ipAddr := &ipamv1alpha1.IP{}
@@ -87,7 +91,7 @@ func (d *metalDriver) applyIPAddresses(ctx context.Context, req *driver.CreateMa
 			Name:      ipAddrName,
 		}
 		var err error
-		if err = d.metalClient.Get(ctx, ipAddrKey, ipAddr); err != nil && !apierrors.IsNotFound(err) {
+		if err = metalClient.Get(ctx, ipAddrKey, ipAddr); err != nil && !apierrors.IsNotFound(err) {
 			return nil, err
 		}
 		if err == nil {
@@ -106,7 +110,7 @@ func (d *metalDriver) applyIPAddresses(ctx context.Context, req *driver.CreateMa
 				},
 				Spec: ipamv1alpha1.IPSpec{Subnet: subnetRef},
 			}
-			if err = d.metalClient.Create(ctx, ip); err != nil {
+			if err = metalClient.Create(ctx, ip); err != nil {
 				return nil, fmt.Errorf("error applying IP: %w", err)
 			}
 			// Wait for the IP address to reach the finished state
@@ -212,11 +216,15 @@ func (d *metalDriver) applyServerClaim(ctx context.Context, req *driver.CreateMa
 		},
 	}
 
-	if err := d.metalClient.Patch(ctx, serverClaim, client.Apply, fieldOwner, client.ForceOwnership); err != nil {
+	d.clientProvider.Lock()
+	defer d.clientProvider.Unlock()
+	metalClient := d.clientProvider.Client
+
+	if err := metalClient.Patch(ctx, serverClaim, client.Apply, fieldOwner, client.ForceOwnership); err != nil {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("error applying metal machine: %s", err.Error()))
 	}
 
-	if err := d.metalClient.Patch(ctx, ignitionSecret, client.Apply, fieldOwner, client.ForceOwnership); err != nil {
+	if err := metalClient.Patch(ctx, ignitionSecret, client.Apply, fieldOwner, client.ForceOwnership); err != nil {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("error applying ignition secret: %s", err.Error()))
 	}
 
